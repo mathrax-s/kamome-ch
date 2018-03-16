@@ -1,0 +1,11 @@
+_InitUART: CODE, 736 0 38
+_UART_Read: CODE, 833 0 27
+_UART_Available: CODE, 804 0 29
+_ConfigureOscillator: CODE, 866 0 4
+_main: CODE, 427 0 188
+_Set_Color: CODE, 98 0 329
+__initialization: CODE, 63 0 31
+_isr: CODE, 4 0 57
+___wmul: CODE, 774 0 30
+_Set_LEDs_16: CODE, 615 0 121
+Total: 854
