@@ -9,7 +9,17 @@ volatile unsigned char LEDs[54];
 volatile unsigned char SortLEDs[54];
 volatile unsigned char POS;
 
-#define setID 5
+#define pLedDi			PORTA,2
+#define kNumberOfLed	18
+
+//PORTA bank0縲?LATA bank2
+volatile uint8_t	dt		@ 0x20;
+volatile uint8_t	bitCount @ 0x21;
+volatile uint8_t	byteCount @ 0x22;
+volatile uint16_t	saveFsr	@ 0x23;
+
+
+#define setID 6
 unsigned char myID = (setID - 1);
 
 #define UART_BUFFER_SIZE   64
@@ -28,178 +38,235 @@ void Set_Color(void);
 //#define W 0
 //#define F 1
 
-void Set_LEDs_16(void) {
-    //    GIE = 0;
+//void Set_LEDs_16(void) {
+//    //    GIE = 0;
+//#asm
+//    MOVLW 0x50;
+//    MOVWF FSR0L;
+//    MOVLW 0x20;
+//    MOVWF FSR0H; // FSR0を0x2000に
+//
+//    CLRF _POS; // POS=0;
+//    CLRF FSR1L;
+//    CLRF FSR1H;
+//
+//    BANKSEL _loop;
+//    MOVLW 54;
+//    MOVWF _loop; //loop=3;
+//
+//_GET_DATA:
+//    MOVLW _SortLEDs; //W=LEDs
+//    ADDWF _POS, W; //W=W+POS
+//    MOVWF FSR1L;
+//    MOVF INDF1, W;
+//    MOVWF INDF0; //FSR0にWを
+//    INCF FSR0L, F; //FSR0を次のアドレスに
+//
+//    INCF _POS, F; //pos=pos+1;
+//
+//    DECF _loop, F; //loop=loop-1;
+//    BTFSS STATUS, 2;
+//    GOTO _GET_DATA;
+//
+//
+//    //ここからWS2812と通信
+//    BANKSEL _loop;
+//    MOVLW 54;
+//    MOVWF _loop; //ループする回数
+//
+//    MOVLW 0x50;
+//    MOVWF FSR0L;
+//    MOVLW 0x20;
+//    MOVWF FSR0H;
+//
+//    // 7bit
+//_SET_7:
+//    BANKSEL PORTA;
+//    BCF PORTA, 2; //Bit=0;
+//
+//_NEXT_7:
+//    NOP; //1:NOP
+//    MOVF INDF0, W; //2:Wから読み込み
+//
+//    BANKSEL PORTA; //3:Bit=1;
+//    BSF PORTA, 2; //4:
+//    BTFSC WREG, 7; //5:Wの7bitが0なら次をスキップ
+//    GOTO _SET_0_G_7; //6:
+//    BCF PORTA, 2; //7:Bit=0;
+//    GOTO _NEXT_0_G_7; //8:
+//_SET_0_G_7:
+//    NOP; //9:
+//    BCF PORTA, 2; //10:
+//
+//_NEXT_0_G_7:
+//    // 6bit
+//    NOP;
+//    INCF FSR0L, F;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 6;
+//    GOTO _SET_0_G_6;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_6;
+//_SET_0_G_6:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_6:
+//    // 5bit
+//    NOP;
+//    NOP;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 5;
+//    GOTO _SET_0_G_5;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_5;
+//_SET_0_G_5:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_5:
+//    // 4bit
+//    NOP;
+//    NOP;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 4;
+//    GOTO _SET_0_G_4;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_4;
+//_SET_0_G_4:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_4:
+//    // 3bit
+//    NOP;
+//    NOP;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 3;
+//    GOTO _SET_0_G_3;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_3;
+//_SET_0_G_3:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_3:
+//    // 2bit
+//    NOP;
+//    NOP;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 2;
+//    GOTO _SET_0_G_2;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_2;
+//_SET_0_G_2:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_2:
+//    // 1bit
+//    NOP;
+//    DECF _loop, f;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 1;
+//    GOTO _SET_0_G_1;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_0_G_1;
+//_SET_0_G_1:
+//    NOP;
+//    BCF PORTA, 2;
+//
+//_NEXT_0_G_1:
+//    // 0bit
+//    BTFSC STATUS, 2;
+//    GOTO _LOOP_END;
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 0;
+//    GOTO _SET_7;
+//    BCF PORTA, 2;
+//    GOTO _NEXT_7;
+//
+//_LOOP_END:
+//    BANKSEL PORTA;
+//    BSF PORTA, 2;
+//    BTFSC WREG, 0;
+//    GOTO _SET;
+//    BCF PORTA, 2;
+//    GOTO _NEXT;
+//_SET:
+//    NOP;
+//    BCF PORTA, 2;
+//_NEXT:
+//#endasm
+//
+//    // reset period
+//    __delay_us(50);
+//
+//}
+void Set_LEDs_16( void )
+{
+	//go
+	//di();
 #asm
-    MOVLW 0x50;
-    MOVWF FSR0L;
-    MOVLW 0x20;
-    MOVWF FSR0H; // FSR0を0x2000に
+	banksel	_byteCount
+	movf	FSR0L, W
+	movwf	_saveFsr
+	movf	FSR0H, W
+	movwf	_saveFsr+1			;save FSR0
 
-    CLRF _POS; // POS=0;
-    CLRF FSR1L;
-    CLRF FSR1H;
+	movlw	(kNumberOfLed*3)
+	movwf	_byteCount
+	movlw	low(_SortLEDs)			;top address
+	movwf	FSR0L
+	movlw	high(_SortLEDs)
+	movwf	FSR0H
+	clrf	_bitCount
+	goto	ByteLoop
 
-    BANKSEL _loop;
-    MOVLW 54;
-    MOVWF _loop; //loop=3;
+Adjust:
+	nop						; 1
+	rlf		_dt, F			; 1
+	goto	BitLoop			; 2
 
-_GET_DATA:
-    MOVLW _SortLEDs; //W=LEDs
-    ADDWF _POS, W; //W=W+POS
-    MOVWF FSR1L;
-    MOVF INDF1, W;
-    MOVWF INDF0; //FSR0にWを
-    INCF FSR0L, F; //FSR0を次のアドレスに
-
-    INCF _POS, F; //pos=pos+1;
-
-    DECF _loop, F; //loop=loop-1;
-    BTFSS STATUS, 2;
-    GOTO _GET_DATA;
-
-
-    //ここからWS2812と通信
-    BANKSEL _loop;
-    MOVLW 54;
-    MOVWF _loop; //ループする回数
-
-    MOVLW 0x50;
-    MOVWF FSR0L;
-    MOVLW 0x20;
-    MOVWF FSR0H;
-
-    // 7bit
-_SET_7:
-    BANKSEL PORTA;
-    BCF PORTA, 2; //Bit=0;
-
-_NEXT_7:
-    NOP; //1:NOP
-    MOVF INDF0, W; //2:Wから読み込み
-
-    BANKSEL PORTA; //3:Bit=1;
-    BSF PORTA, 2; //4:
-    BTFSC WREG, 7; //5:Wの7bitが0なら次をスキップ
-    GOTO _SET_0_G_7; //6:
-    BCF PORTA, 2; //7:Bit=0;
-    GOTO _NEXT_0_G_7; //8:
-_SET_0_G_7:
-    NOP; //9:
-    BCF PORTA, 2; //10:
-
-_NEXT_0_G_7:
-    // 6bit
-    NOP;
-    INCF FSR0L, F;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 6;
-    GOTO _SET_0_G_6;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_6;
-_SET_0_G_6:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_6:
-    // 5bit
-    NOP;
-    NOP;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 5;
-    GOTO _SET_0_G_5;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_5;
-_SET_0_G_5:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_5:
-    // 4bit
-    NOP;
-    NOP;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 4;
-    GOTO _SET_0_G_4;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_4;
-_SET_0_G_4:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_4:
-    // 3bit
-    NOP;
-    NOP;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 3;
-    GOTO _SET_0_G_3;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_3;
-_SET_0_G_3:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_3:
-    // 2bit
-    NOP;
-    NOP;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 2;
-    GOTO _SET_0_G_2;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_2;
-_SET_0_G_2:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_2:
-    // 1bit
-    NOP;
-    DECF _loop, f;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 1;
-    GOTO _SET_0_G_1;
-    BCF PORTA, 2;
-    GOTO _NEXT_0_G_1;
-_SET_0_G_1:
-    NOP;
-    BCF PORTA, 2;
-
-_NEXT_0_G_1:
-    // 0bit
-    BTFSC STATUS, 2;
-    GOTO _LOOP_END;
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 0;
-    GOTO _SET_7;
-    BCF PORTA, 2;
-    GOTO _NEXT_7;
-
-_LOOP_END:
-    BANKSEL PORTA;
-    BSF PORTA, 2;
-    BTFSC WREG, 0;
-    GOTO _SET;
-    BCF PORTA, 2;
-    GOTO _NEXT;
-_SET:
-    NOP;
-    BCF PORTA, 2;
-_NEXT:
+ByteLoop:
+	moviw	FSR0++			; 1
+	movwf	_dt				; 1
+	bsf		_bitCount, 3	; 1  set 8
+BitLoop:
+	bsf		pLedDi			; 1
+	btfsc	_dt, 7			; 1
+	goto	Send1			; 2 or 1
+	bcf		pLedDi			; 1			375nS
+	decfsz	_bitCount, F	; 1
+	goto	Adjust			; 2
+	decfsz	_byteCount, F	; 1
+	goto	ByteLoop		; 2
+	goto	SendEnd
+Send1:
+	rlf		_dt, F			; 1
+	nop						; 1
+	nop						; 1
+	bcf		pLedDi			; 1			875nS
+	decfsz	_bitCount, F	; 1
+	goto	BitLoop			; 2
+	decfsz	_byteCount, F	; 1
+	goto	ByteLoop		; 2
+SendEnd:
+	movf	_saveFsr, W
+	movwf	FSR0L
+	movf	_saveFsr+1, W
+	movwf	FSR0H
 #endasm
-
-    // reset period
-    __delay_us(50);
-
+	//ei();
 }
+
 
 
 unsigned char RcvData;

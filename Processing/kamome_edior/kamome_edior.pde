@@ -41,7 +41,8 @@ void setup() {
   //image[0] = loadImage("dia.png");
   //image[0] = loadImage("hane_L.png");
   //image[0] = loadImage("tsuta.png");
-  image[0] = loadImage("tsuta_6.png");
+  //image[0] = loadImage("haneL32_120_005.png");
+  image[0] = loadImage("tsutaL32_120_003.png");
 
   noSmooth();
   frameRate(60);
