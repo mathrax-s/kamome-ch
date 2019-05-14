@@ -29,7 +29,7 @@ char ssid[] = "MATHRAX_SUB";     // your network SSID (name)
 #else
 char ssid[] = "HONBAN";     // your network SSID (name)
 #endif
-char pass[] = "remokuma";    // your network password
+char pass[] = "password";    // your network password
 
 
 #if (id == 120) //DIAMOND
