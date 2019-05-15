@@ -25,7 +25,7 @@ int wifiUse = 0;
 WiFiUDP Udp;
 
 #ifdef __DEBUG_MODE__
-char ssid[] = "MATHRAX_SUB";     // your network SSID (name)
+char ssid[] = "MATHRAX";     // your network SSID (name)
 #else
 char ssid[] = "HONBAN";     // your network SSID (name)
 #endif
@@ -152,7 +152,7 @@ void setup() {
   digitalWrite(4, HIGH);
 
   //Wifiを開始（このプログラムの下の方にあります）
-  wifiStart();
+//  wifiStart();
 
   for (i = 0; i < maxBuf; i++) {
     now_r[i] = 0;
@@ -189,8 +189,8 @@ void setup() {
 void loop() {
   int i;
 
-  ArduinoOTA.handle();
-  doWifi();
+//  ArduinoOTA.handle();
+//  doWifi();
 
 
   if (minamoMode == 1) {
